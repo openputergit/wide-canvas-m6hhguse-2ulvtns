@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OffersMonkey Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .chat-container {
+            height: calc(100vh - 180px);
+        }
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .typing-indicator::after {
+            content: '...';
+            animation: typing 1s infinite;
+        }
+        @keyframes typing {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-teal-600 mb-2">OffersMonkey Assistant</h1>
+            <p class="text-gray-600">Ask me anything about OffersMonkey deals and offers!</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-lg p-4">
+            <div id="chat-container" class="chat-container overflow-y-auto mb-4">
+                <div class="message-container">
+                    <div class="flex mb-4">
+                        <div class="message-bubble bg-teal-100 rounded-lg p-3 ml-auto">
+                            <p>Hi! I'm your OffersMonkey assistant. I can help you find the best deals and answer any questions about coupons, cashback offers, and more. What would you like to know?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <input type="text" id="user-input" class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="Type your question here...">
+                <button onclick="sendMessage()" class="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-600 transition-colors">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            userInput.value = '';
+
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'flex mb-4';
+            typingDiv.innerHTML = `
+                <div class="message-bubble bg-teal-100 rounded-lg p-3 typing-indicator">
+                    Thinking
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/ai', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer fYBScb7ZPLOQuxszyXjhKpNq9js1',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [{
+                            role: 'user',
+                            content: [{
+                                type: 'text',
+                                text: `As an expert on OffersMonkey.com, please provide accurate information about the following query: ${message}`
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                chatContainer.removeChild(typingDiv);
+                
+                // Add AI response
+                addMessage(data.message, 'assistant');
+            } catch (error) {
+                console.error('Error:', error);
+                chatContainer.removeChild(typingDiv);
+                addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+            }
+        }
+
+        function addMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex mb-4';
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="message-bubble bg-gray-200 rounded-lg p-3">
+                        <p>${message}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-bubble bg-teal-100 rounded-lg p-3">
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
